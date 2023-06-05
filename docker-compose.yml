@@ -1,0 +1,45 @@
+version: '3.7'
+services:
+  node-red:
+    build:
+      context: ./docker/nodered
+    restart: unless-stopped
+    ports:
+      - "8451:1880"
+    env_file:
+      - "./docker/nodered/nodered.env"
+    volumes:
+      - "./volumes/nodered/data:/data"
+    networks:
+      - "iotnet"
+
+  influx:
+    image: influxdb:latest
+    restart: unless-stopped
+    ports:
+      - "8600:8086"
+    env_file:
+      - "./docker/influxdb/influxdb.env"
+    volumes:
+      - "./volumes/influxdb/data:/var/lib/influxdb2"
+      - "./volumes/influxdb/config:/etc/influxdb2"
+      - "./backups/influxdb/db:/var/lib/influxdb2/backup"
+    networks:
+       - "iotnet"
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - "8599:3000"
+    env_file:
+      - "./docker/grafana/grafana.env"
+    volumes:
+      - "./volumes/grafana/data:/var/lib/grafana"
+      - "./volumes/grafana/log:/var/log/grafana"
+    networks:
+      - "iotnet"
+
+networks:
+  iotnet:
+    driver: bridge
